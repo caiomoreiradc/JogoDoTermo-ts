@@ -7,7 +7,7 @@ class TelaTermo {
     constructor() {
         this.jogo = new Termo();
         this.linhas = [];
-        this.botoesClicados = [];
+        this.letrasClicadas = [];
         this.indiceAtual = 0;
         this.registrarElementos();
         this.registrarEventos();
@@ -17,6 +17,7 @@ class TelaTermo {
         this.btnApagar = document.getElementById('btnApagar');
         this.pnlConteudo = document.getElementById('pnlConteudo');
         this.pnlTeclado = document.getElementById('pnlTeclado');
+        this.pnlNotificacao = document.getElementById('pnlNotificacao');
         this.linhas = Array.from(document.querySelectorAll('.linha'));
     }
     registrarEventos() {
@@ -32,7 +33,7 @@ class TelaTermo {
         if (this.indiceAtual == 5)
             return;
         const botao = sender.target;
-        this.botoesClicados.push(botao);
+        this.letrasClicadas.push(botao);
         const letra = this.linhaAtual.children[this.indiceAtual];
         letra.textContent = botao.textContent;
         this.indiceAtual++;
@@ -41,7 +42,7 @@ class TelaTermo {
         if (this.indiceAtual <= 0)
             return;
         this.indiceAtual--;
-        this.botoesClicados.pop();
+        this.letrasClicadas.pop();
         const letra = this.linhaAtual.children[this.indiceAtual];
         letra.textContent = '';
     }
@@ -55,6 +56,42 @@ class TelaTermo {
         this.colorirBotoes(avaliacoes);
         this.jogo.registrarTentativa();
         this.indiceAtual = 0;
+        this.letrasClicadas = [];
+        const jogadorAcertou = this.jogo.jogadorAcertou(palavraObtida);
+        if (jogadorAcertou || this.jogo.jogadorPerdeu()) {
+            this.exibirNotificacao(jogadorAcertou);
+            this.exibirBotaoReiniciar();
+            this.btnEnter.disabled = true;
+        }
+    }
+    reiniciarJogo() {
+        this.limparGrid();
+        this.limparTeclado();
+        this.pnlNotificacao.replaceChildren();
+        this.btnEnter.disabled = false;
+        this.jogo = new Termo();
+    }
+    exibirNotificacao(jogadorAcertou) {
+        const lblNotificacao = document.createElement('p');
+        let mensagemNotificacao = '';
+        if (jogadorAcertou) {
+            mensagemNotificacao = 'Você acertou a palavra secreta, parabéns!';
+            lblNotificacao.classList.add('notificacao-acerto');
+        }
+        else {
+            mensagemNotificacao = 'Você não conseguiu! Tente novamente.';
+            lblNotificacao.classList.add('notificacao-erro');
+        }
+        lblNotificacao.textContent = mensagemNotificacao;
+        this.pnlNotificacao.appendChild(lblNotificacao);
+    }
+    exibirBotaoReiniciar() {
+        const btnReiniciar = document.createElement('button');
+        btnReiniciar.innerHTML =
+            `<span class="material-symbols-outlined">refresh</span>Reiniciar`;
+        btnReiniciar.classList.add('btn-reiniciar');
+        btnReiniciar.addEventListener('click', () => this.reiniciarJogo());
+        this.pnlNotificacao.appendChild(btnReiniciar);
     }
     obterPalavraLinha() {
         var _a;
@@ -66,16 +103,16 @@ class TelaTermo {
     }
     colorirBotoes(avaliacoes) {
         for (let i = 0; i < avaliacoes.length; i++) {
-            const botao = this.botoesClicados[i];
+            const botao = this.letrasClicadas[i];
             switch (avaliacoes[i]) {
                 case AvaliacaoLetra.PosicaoCorreta:
-                    botao.style.backgroundColor = "#7cfc00";
+                    botao.classList.add('letra-posicao-correta');
                     break;
                 case AvaliacaoLetra.PosicaoIncorreta:
-                    botao.style.backgroundColor = "#dba827";
+                    botao.classList.add('letra-posicao-incorreta');
                     break;
                 case AvaliacaoLetra.NaoExistente:
-                    botao.style.backgroundColor = "#2c2323";
+                    botao.classList.add('letra-nao-existente');
                     break;
             }
         }
@@ -85,15 +122,38 @@ class TelaTermo {
             const letraSelecionada = this.linhaAtual.children[i];
             switch (avaliacoes[i]) {
                 case AvaliacaoLetra.PosicaoCorreta:
-                    letraSelecionada.style.backgroundColor = "#7cfc00";
+                    letraSelecionada.classList.add('letra-posicao-correta');
                     break;
                 case AvaliacaoLetra.PosicaoIncorreta:
-                    letraSelecionada.style.backgroundColor = "#dba827";
+                    letraSelecionada.classList.add('letra-posicao-incorreta');
                     break;
                 case AvaliacaoLetra.NaoExistente:
-                    letraSelecionada.style.backgroundColor = "#2c2323";
+                    letraSelecionada.classList.add('letra-nao-existente');
                     break;
             }
+        }
+    }
+    limparGrid() {
+        const classesParaRemover = [
+            'letra-posicao-correta',
+            'letra-posicao-incorreta',
+            'letra-nao-existente'
+        ];
+        for (let linha of this.linhas) {
+            for (let letra of linha.children) {
+                letra.textContent = '';
+                letra.classList.remove(...classesParaRemover);
+            }
+        }
+    }
+    limparTeclado() {
+        const classesParaRemover = [
+            'letra-posicao-correta',
+            'letra-posicao-incorreta',
+            'letra-nao-existente'
+        ];
+        for (let botao of this.pnlTeclado.children) {
+            botao.classList.remove(...classesParaRemover);
         }
     }
 }
