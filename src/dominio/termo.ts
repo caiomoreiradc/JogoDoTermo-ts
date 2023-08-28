@@ -1,12 +1,20 @@
-import { AvaliacaoLetra } from "./avaliacao-letra.js";
+import { AvaliacaoLetra } from "../avaliacao-letra.js";
+import { HistoricoUsuario } from "./historico-usuario.js";
 
 export class Termo {
   private palavraSecreta: string;
   private tentativas: number;
 
-  constructor() {
+  private _historico: HistoricoUsuario;
+
+  get historico(): HistoricoUsuario {
+    return this._historico;
+  }
+
+  constructor(historico: HistoricoUsuario) {
     this.palavraSecreta = 'CAIXA';
     this.tentativas = 0;
+    this._historico = historico;
 
     console.log(this.palavraSecreta);
   }
@@ -31,10 +39,30 @@ export class Termo {
   registrarTentativa() {
     this.tentativas++;
   }
+
+  registrarVitoria() {
+    this._historico.jogos++;
+    this._historico.vitorias++;
+    this._historico.sequencia++;
+
+    this._historico.tentativas[this.tentativas - 1]++;
+  }
+
+  registrarDerrota() {
+    this._historico.jogos++;
+    this._historico.derrotas++;
+    this._historico.sequencia = 0;
+  }
   
   jogadorAcertou(palavra: string): boolean {
     const jogadorAcertou: boolean = palavra == this.palavraSecreta;
 
+    if (jogadorAcertou)
+      this.registrarVitoria();
+
+    else if (this.jogadorPerdeu())
+      this.registrarDerrota();
+    
     return jogadorAcertou;
   }
 

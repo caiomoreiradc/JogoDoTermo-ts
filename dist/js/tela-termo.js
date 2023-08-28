@@ -1,27 +1,41 @@
 import { AvaliacaoLetra } from "./avaliacao-letra.js";
-import { Termo } from "./termo.js";
+import { LocalStorageService } from "./services/local-storage.service.js";
+import { Termo } from "./dominio/termo.js";
 class TelaTermo {
     get linhaAtual() {
         return this.linhas[this.jogo.obterQuantidadeTentativas()];
     }
     constructor() {
-        this.jogo = new Termo();
+        this.localStorageService = new LocalStorageService();
+        this.jogo = new Termo(this.localStorageService.carregarDados());
         this.linhas = [];
         this.letrasClicadas = [];
         this.indiceAtual = 0;
         this.registrarElementos();
         this.registrarEventos();
+        this.popularEstatisticas();
+        this.desenharGridTentativas();
     }
     registrarElementos() {
         this.btnEnter = document.getElementById('btnEnter');
         this.btnApagar = document.getElementById('btnApagar');
+        this.btnExibirHistorico = document.getElementById('btnExibirHistorico');
         this.pnlConteudo = document.getElementById('pnlConteudo');
         this.pnlTeclado = document.getElementById('pnlTeclado');
         this.pnlNotificacao = document.getElementById('pnlNotificacao');
+        this.pnlHistorico = document.getElementById('pnlHistorico');
         this.linhas = Array.from(document.querySelectorAll('.linha'));
     }
     registrarEventos() {
         const botoesTeclado = this.pnlTeclado.children;
+        this.btnExibirHistorico.addEventListener('click', () => {
+            this.pnlHistorico.style.display = 'grid';
+        });
+        document.addEventListener('click', (event) => {
+            const target = event.target;
+            if (!this.pnlHistorico.contains(target) && event.target !== this.btnExibirHistorico)
+                this.pnlHistorico.style.display = 'none';
+        });
         for (let botao of botoesTeclado) {
             if (botao.id != 'btnEnter' && botao.id != 'btnApagar')
                 botao.addEventListener('click', (sender) => this.digitarLetra(sender));
@@ -62,6 +76,7 @@ class TelaTermo {
             this.exibirNotificacao(jogadorAcertou);
             this.exibirBotaoReiniciar();
             this.btnEnter.disabled = true;
+            this.localStorageService.salvarDados(this.jogo.historico);
         }
     }
     reiniciarJogo() {
@@ -69,7 +84,7 @@ class TelaTermo {
         this.limparTeclado();
         this.pnlNotificacao.replaceChildren();
         this.btnEnter.disabled = false;
-        this.jogo = new Termo();
+        this.jogo = new Termo(this.localStorageService.carregarDados());
     }
     exibirNotificacao(jogadorAcertou) {
         const lblNotificacao = document.createElement('p');
@@ -154,6 +169,30 @@ class TelaTermo {
         ];
         for (let botao of this.pnlTeclado.children) {
             botao.classList.remove(...classesParaRemover);
+        }
+    }
+    popularEstatisticas() {
+        const lblJogos = document.getElementById('lblJogos');
+        const lblVitorias = document.getElementById('lblVitorias');
+        const lblDerrotas = document.getElementById('lblDerrotas');
+        const lblSequencia = document.getElementById('lblSequencia');
+        lblJogos.textContent = this.jogo.historico.jogos.toString();
+        lblVitorias.textContent = this.jogo.historico.vitorias.toString();
+        lblDerrotas.textContent = this.jogo.historico.derrotas.toString();
+        lblSequencia.textContent = this.jogo.historico.sequencia.toString();
+    }
+    desenharGridTentativas() {
+        const elementos = Array.from(document.querySelectorAll('.valor-tentativa'));
+        const tentativas = this.jogo.historico.tentativas;
+        for (let i = 0; i < tentativas.length; i++) {
+            const label = elementos[i];
+            const qtdTentativas = tentativas[i];
+            label.style.width = `${qtdTentativas * 10}%`;
+            label.textContent = qtdTentativas.toString();
+            if (parseInt(label.style.width) < 5)
+                label.style.width = '5%';
+            if (parseInt(label.style.width) > 100)
+                label.style.width = '100%';
         }
     }
 }

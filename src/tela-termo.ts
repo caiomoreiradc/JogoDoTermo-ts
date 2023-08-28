@@ -1,13 +1,16 @@
 import { AvaliacaoLetra } from "./avaliacao-letra.js";
-import { Termo } from "./termo.js";
+import { LocalStorageService } from "./services/local-storage.service.js";
+import { Termo } from "./dominio/termo.js";
 
 class TelaTermo {
   pnlConteudo: HTMLDivElement;
   pnlTeclado: HTMLDivElement;
   pnlNotificacao: HTMLDivElement;
+  pnlHistorico: HTMLDivElement;
 
   btnEnter: HTMLButtonElement;
   btnApagar: HTMLButtonElement;
+  btnExibirHistorico: HTMLButtonElement;
 
   linhas: HTMLDivElement[];
   letrasClicadas: HTMLButtonElement[];
@@ -17,31 +20,50 @@ class TelaTermo {
   }
 
   private jogo: Termo;
+  private localStorageService: LocalStorageService;
   private indiceAtual: number;
 
   constructor() {
-    this.jogo = new Termo();
+    this.localStorageService = new LocalStorageService();
+
+    this.jogo = new Termo(this.localStorageService.carregarDados());
+    
     this.linhas = [];
     this.letrasClicadas = [];
     this.indiceAtual = 0;
 
     this.registrarElementos();
     this.registrarEventos();
+    this.popularEstatisticas();
+    this.desenharGridTentativas();
   }
 
   registrarElementos() {
     this.btnEnter = document.getElementById('btnEnter') as HTMLButtonElement;
     this.btnApagar = document.getElementById('btnApagar') as HTMLButtonElement;
+    this.btnExibirHistorico = document.getElementById('btnExibirHistorico') as HTMLButtonElement;
 
     this.pnlConteudo = document.getElementById('pnlConteudo') as HTMLDivElement;
     this.pnlTeclado = document.getElementById('pnlTeclado') as HTMLDivElement;
     this.pnlNotificacao = document.getElementById('pnlNotificacao') as HTMLDivElement;
+    this.pnlHistorico = document.getElementById('pnlHistorico') as HTMLDivElement;
 
     this.linhas = Array.from(document.querySelectorAll('.linha'));
   }
 
   registrarEventos() {
     const botoesTeclado = this.pnlTeclado.children;
+
+    this.btnExibirHistorico.addEventListener('click', () => {
+      this.pnlHistorico.style.display = 'grid';
+    });
+
+    document.addEventListener('click', (event: Event) => {
+      const target = event.target as HTMLElement;
+
+      if (!this.pnlHistorico.contains(target) && event.target !== this.btnExibirHistorico)
+        this.pnlHistorico.style.display = 'none';
+    });
 
     for (let botao of botoesTeclado) {
       if (botao.id != 'btnEnter' && botao.id != 'btnApagar')
@@ -100,6 +122,8 @@ class TelaTermo {
       this.exibirBotaoReiniciar();
 
       this.btnEnter.disabled = true;
+
+      this.localStorageService.salvarDados(this.jogo.historico);
     }
   }
 
@@ -110,7 +134,7 @@ class TelaTermo {
     this.pnlNotificacao.replaceChildren();
     this.btnEnter.disabled = false;
 
-    this.jogo = new Termo();
+    this.jogo = new Termo(this.localStorageService.carregarDados());
   }
 
   exibirNotificacao(jogadorAcertou: boolean) {
@@ -197,7 +221,7 @@ class TelaTermo {
     }
   }
 
-  limparGrid(): void {
+  private limparGrid(): void {
     const classesParaRemover: string[] = [
       'letra-posicao-correta',
       'letra-posicao-incorreta',
@@ -212,7 +236,7 @@ class TelaTermo {
     }
   }
 
-  limparTeclado(): void {
+  private limparTeclado(): void {
     const classesParaRemover: string[] = [
       'letra-posicao-correta',
       'letra-posicao-incorreta',
@@ -221,6 +245,39 @@ class TelaTermo {
 
     for (let botao of this.pnlTeclado.children) {
       botao.classList.remove(...classesParaRemover);
+    }
+  }
+
+  private popularEstatisticas(): void {
+    const lblJogos = document.getElementById('lblJogos') as HTMLParagraphElement;
+    const lblVitorias = document.getElementById('lblVitorias') as HTMLParagraphElement;
+    const lblDerrotas = document.getElementById('lblDerrotas') as HTMLParagraphElement;
+    const lblSequencia = document.getElementById('lblSequencia') as HTMLParagraphElement;
+
+    lblJogos.textContent = this.jogo.historico.jogos.toString();
+    lblVitorias.textContent = this.jogo.historico.vitorias.toString();
+    lblDerrotas.textContent = this.jogo.historico.derrotas.toString();
+    lblSequencia.textContent = this.jogo.historico.sequencia.toString();
+  }
+
+  private desenharGridTentativas(): void {
+    const elementos =
+      Array.from(document.querySelectorAll('.valor-tentativa')) as HTMLParagraphElement[];
+    
+    const tentativas = this.jogo.historico.tentativas;
+
+    for (let i = 0; i < tentativas.length; i++) {
+      const label = elementos[i];
+      const qtdTentativas = tentativas[i];
+
+      label.style.width = `${ qtdTentativas * 10 }%`;
+      label.textContent = qtdTentativas.toString();
+
+      if (parseInt(label.style.width) < 5)
+        label.style.width = '5%';
+
+      if (parseInt(label.style.width) > 100)
+        label.style.width = '100%';
     }
   }
 }
