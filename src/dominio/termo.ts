@@ -3,20 +3,27 @@ import { HistoricoUsuario } from "./historico-usuario.js";
 
 export class Termo {
   private palavraSecreta: string;
-  private tentativas: number;
-
+  
   private _historico: HistoricoUsuario;
+  private _tentativas: number;
 
   get historico(): HistoricoUsuario {
     return this._historico;
   }
 
-  constructor(historico: HistoricoUsuario) {
-    this.palavraSecreta = 'CAIXA';
-    this.tentativas = 0;
-    this._historico = historico;
+  set historico(novo: HistoricoUsuario) {
+    this._historico = novo;
+  }
 
-    console.log(this.palavraSecreta);
+  get tentativas(): number {
+    return this._tentativas;
+  }
+
+  constructor(historico: HistoricoUsuario) {
+    this.palavraSecreta = this.obterPalavraAleatoria();
+
+    this._tentativas = 0;
+    this._historico = historico;
   }
 
   avaliarPalavra(palavra: string): AvaliacaoLetra[] {
@@ -35,24 +42,6 @@ export class Termo {
 
     return avaliacoes;
   }
-
-  registrarTentativa() {
-    this.tentativas++;
-  }
-
-  registrarVitoria() {
-    this._historico.jogos++;
-    this._historico.vitorias++;
-    this._historico.sequencia++;
-
-    this._historico.tentativas[this.tentativas - 1]++;
-  }
-
-  registrarDerrota() {
-    this._historico.jogos++;
-    this._historico.derrotas++;
-    this._historico.sequencia = 0;
-  }
   
   jogadorAcertou(palavra: string): boolean {
     const jogadorAcertou: boolean = palavra == this.palavraSecreta;
@@ -67,15 +56,29 @@ export class Termo {
   }
 
   jogadorPerdeu(): boolean {
-    return this.tentativas >= 5;
+    return this._tentativas >= 5;
   }
 
-  obterQuantidadeTentativas(): number {
-    return this.tentativas;
+  registrarTentativa(): void {
+    this._tentativas++;
+  }
+
+  private registrarVitoria(): void {
+    this._historico.jogos++;
+    this._historico.vitorias++;
+    this._historico.sequencia++;
+
+    this._historico.tentativas[this._tentativas - 1]++;
+  }
+
+  private registrarDerrota(): void {
+    this._historico.jogos++;
+    this._historico.derrotas++;
+    this._historico.sequencia = 0;
   }
 
   private obterPalavraAleatoria(): string {
-    const palavras = [
+    const palavras: string[] = [
       'ABRIR',
       'AMIGO',
       'BEBER',
@@ -109,8 +112,3 @@ export class Termo {
     return palavras[indiceAletorio];
   }
 }
-
-// type AvaliacaoLetra = 'PosicaoCorreta' | 'PosicaoIncorreta' | 'NaoExistente';
-
-// const obj: AvaliacaoLetra = 'PosicaoIncorreta';
-

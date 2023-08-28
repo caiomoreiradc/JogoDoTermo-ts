@@ -15,21 +15,17 @@ class TelaTermo {
   linhas: HTMLDivElement[];
   letrasClicadas: HTMLButtonElement[];
 
-  get linhaAtual(): HTMLDivElement {
-    return this.linhas[this.jogo.obterQuantidadeTentativas()];
-  }
-
   private jogo: Termo;
   private localStorageService: LocalStorageService;
   private indiceAtual: number;
 
+  get linhaAtual(): HTMLDivElement {
+    return this.linhas[this.jogo.tentativas];
+  }
+
   constructor() {
     this.localStorageService = new LocalStorageService();
-
     this.jogo = new Termo(this.localStorageService.carregarDados());
-    
-    this.linhas = [];
-    this.letrasClicadas = [];
     this.indiceAtual = 0;
 
     this.registrarElementos();
@@ -38,43 +34,7 @@ class TelaTermo {
     this.desenharGridTentativas();
   }
 
-  registrarElementos() {
-    this.btnEnter = document.getElementById('btnEnter') as HTMLButtonElement;
-    this.btnApagar = document.getElementById('btnApagar') as HTMLButtonElement;
-    this.btnExibirHistorico = document.getElementById('btnExibirHistorico') as HTMLButtonElement;
-
-    this.pnlConteudo = document.getElementById('pnlConteudo') as HTMLDivElement;
-    this.pnlTeclado = document.getElementById('pnlTeclado') as HTMLDivElement;
-    this.pnlNotificacao = document.getElementById('pnlNotificacao') as HTMLDivElement;
-    this.pnlHistorico = document.getElementById('pnlHistorico') as HTMLDivElement;
-
-    this.linhas = Array.from(document.querySelectorAll('.linha'));
-  }
-
-  registrarEventos() {
-    const botoesTeclado = this.pnlTeclado.children;
-
-    this.btnExibirHistorico.addEventListener('click', () => {
-      this.pnlHistorico.style.display = 'grid';
-    });
-
-    document.addEventListener('click', (event: Event) => {
-      const target = event.target as HTMLElement;
-
-      if (!this.pnlHistorico.contains(target) && event.target !== this.btnExibirHistorico)
-        this.pnlHistorico.style.display = 'none';
-    });
-
-    for (let botao of botoesTeclado) {
-      if (botao.id != 'btnEnter' && botao.id != 'btnApagar')
-        botao.addEventListener('click', (sender: Event) => this.digitarLetra(sender))
-    }
-
-    this.btnEnter.addEventListener('click', () => this.avaliarLinha());
-    this.btnApagar.addEventListener('click', () => this.apagarLetra());
-  }
-
-  digitarLetra(sender: Event) {
+  digitarLetra(sender: Event): void {
     if (this.indiceAtual == 5) return;
 
     const botao = sender.target as HTMLButtonElement;
@@ -87,7 +47,7 @@ class TelaTermo {
     this.indiceAtual++;
   }
 
-  apagarLetra() {
+  apagarLetra(): void {
     if (this.indiceAtual <= 0) return;
 
     this.indiceAtual--;
@@ -101,9 +61,7 @@ class TelaTermo {
   avaliarLinha(): void {
     if (this.indiceAtual != 5) return;
 
-    // gerado pelo grid
     const palavraObtida: string = this.obterPalavraLinha();
-
     const avaliacoes: AvaliacaoLetra[] = this.jogo.avaliarPalavra(palavraObtida);
 
     this.colorirLabels(avaliacoes);
@@ -112,8 +70,7 @@ class TelaTermo {
     this.jogo.registrarTentativa();
 
     this.indiceAtual = 0;
-
-    this.letrasClicadas = [];
+    this.letrasClicadas = new Array<HTMLButtonElement>();
 
     const jogadorAcertou: boolean = this.jogo.jogadorAcertou(palavraObtida);
 
@@ -123,11 +80,12 @@ class TelaTermo {
 
       this.btnEnter.disabled = true;
 
-      this.localStorageService.salvarDados(this.jogo.historico);
+      this.atualizarHistorico();
     }
   }
 
-  reiniciarJogo() {
+
+  reiniciarJogo(): void {
     this.limparGrid();
     this.limparTeclado();
     
@@ -137,40 +95,7 @@ class TelaTermo {
     this.jogo = new Termo(this.localStorageService.carregarDados());
   }
 
-  exibirNotificacao(jogadorAcertou: boolean) {
-    const lblNotificacao: HTMLParagraphElement =
-      document.createElement('p');
-
-    let mensagemNotificacao = '';
-
-    if (jogadorAcertou) {
-      mensagemNotificacao = 'Você acertou a palavra secreta, parabéns!';
-      lblNotificacao.classList.add('notificacao-acerto');
-    }
-    else {
-      mensagemNotificacao = 'Você não conseguiu! Tente novamente.';
-      lblNotificacao.classList.add('notificacao-erro');
-    }
-
-    lblNotificacao.textContent = mensagemNotificacao;
-
-    this.pnlNotificacao.appendChild(lblNotificacao);
-  }
-
-  exibirBotaoReiniciar(): void {
-    const btnReiniciar: HTMLButtonElement = document.createElement('button');
-    
-    btnReiniciar.innerHTML =
-      `<span class="material-symbols-outlined">refresh</span>Reiniciar`;
-
-    btnReiniciar.classList.add('btn-reiniciar');
-
-    btnReiniciar.addEventListener('click', () => this.reiniciarJogo());
-
-    this.pnlNotificacao.appendChild(btnReiniciar);
-  }
-
-  obterPalavraLinha(): string {
+  private obterPalavraLinha(): string {
     const labelsLetra = Array.from(this.linhaAtual.children);
 
     let palavraObtida = '';
@@ -181,7 +106,7 @@ class TelaTermo {
     return palavraObtida;
   }
 
-  private colorirBotoes(avaliacoes: AvaliacaoLetra[]) {
+  private colorirBotoes(avaliacoes: AvaliacaoLetra[]): void {
     for (let i = 0; i < avaliacoes.length; i++) {
       const botao = this.letrasClicadas[i];
 
@@ -201,7 +126,7 @@ class TelaTermo {
     }
   }
 
-  private colorirLabels(avaliacoes: AvaliacaoLetra[]) {
+  private colorirLabels(avaliacoes: AvaliacaoLetra[]): void {
     for (let i = 0; i < avaliacoes.length; i++) {
       const letraSelecionada = this.linhaAtual.children[i] as HTMLDivElement;
 
@@ -219,6 +144,39 @@ class TelaTermo {
           break;
       }
     }
+  }
+
+  private exibirNotificacao(jogadorAcertou: boolean): void {
+    const lblNotificacao: HTMLParagraphElement =
+      document.createElement('p');
+
+    let mensagemNotificacao = '';
+
+    if (jogadorAcertou) {
+      mensagemNotificacao = 'Você acertou a palavra secreta, parabéns!';
+      lblNotificacao.classList.add('notificacao-acerto');
+    }
+    else {
+      mensagemNotificacao = 'Você não conseguiu! Tente novamente.';
+      lblNotificacao.classList.add('notificacao-erro');
+    }
+
+    lblNotificacao.textContent = mensagemNotificacao;
+
+    this.pnlNotificacao.appendChild(lblNotificacao);
+  }
+
+  private exibirBotaoReiniciar(): void {
+    const btnReiniciar: HTMLButtonElement = document.createElement('button');
+    
+    btnReiniciar.innerHTML =
+      `<span class="material-symbols-outlined">refresh</span>Reiniciar`;
+
+    btnReiniciar.classList.add('btn-reiniciar');
+
+    btnReiniciar.addEventListener('click', () => this.reiniciarJogo());
+
+    this.pnlNotificacao.appendChild(btnReiniciar);
   }
 
   private limparGrid(): void {
@@ -282,6 +240,50 @@ class TelaTermo {
 
       label.style.width = (tamanho * parseInt(label.parentElement!.style.width) * 100).toString();
     }
+  }
+
+  private atualizarHistorico(): void {
+    this.localStorageService.salvarDados(this.jogo.historico);
+    
+    this.popularEstatisticas();
+  }
+  
+  private registrarElementos(): void {
+    this.letrasClicadas = new Array<HTMLButtonElement>();
+    
+    this.pnlConteudo = document.getElementById('pnlConteudo') as HTMLDivElement;
+    this.pnlTeclado = document.getElementById('pnlTeclado') as HTMLDivElement;
+    this.pnlNotificacao = document.getElementById('pnlNotificacao') as HTMLDivElement;
+    this.pnlHistorico = document.getElementById('pnlHistorico') as HTMLDivElement;
+
+    this.btnEnter = document.getElementById('btnEnter') as HTMLButtonElement;
+    this.btnApagar = document.getElementById('btnApagar') as HTMLButtonElement;
+    this.btnExibirHistorico = document.getElementById('btnExibirHistorico') as HTMLButtonElement;
+
+    this.linhas = Array.from(document.querySelectorAll('.linha'));
+  }
+
+  private registrarEventos(): void {
+    this.btnExibirHistorico.addEventListener('click', () => {
+      this.pnlHistorico.style.display = 'grid';
+    });
+
+    document.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+
+      if (!this.pnlHistorico.contains(target) && event.target != this.btnExibirHistorico)
+        this.pnlHistorico.style.display = 'none';
+    });
+
+    const botoesTeclado = this.pnlTeclado.children;
+
+    for (let botao of botoesTeclado) {
+      if (botao.id != 'btnEnter' && botao.id != 'btnApagar')
+        botao.addEventListener('click', (sender) => this.digitarLetra(sender));
+    }
+
+    this.btnEnter.addEventListener('click', () => this.avaliarLinha());
+    this.btnApagar.addEventListener('click', () => this.apagarLetra());
   }
 }
 

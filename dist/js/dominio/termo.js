@@ -3,11 +3,16 @@ export class Termo {
     get historico() {
         return this._historico;
     }
+    set historico(novo) {
+        this._historico = novo;
+    }
+    get tentativas() {
+        return this._tentativas;
+    }
     constructor(historico) {
-        this.palavraSecreta = 'CAIXA';
-        this.tentativas = 0;
+        this.palavraSecreta = this.obterPalavraAleatoria();
+        this._tentativas = 0;
         this._historico = historico;
-        console.log(this.palavraSecreta);
     }
     avaliarPalavra(palavra) {
         const avaliacoes = new Array(palavra.length);
@@ -21,20 +26,6 @@ export class Termo {
         }
         return avaliacoes;
     }
-    registrarTentativa() {
-        this.tentativas++;
-    }
-    registrarVitoria() {
-        this._historico.jogos++;
-        this._historico.vitorias++;
-        this._historico.sequencia++;
-        this._historico.tentativas[this.tentativas - 1]++;
-    }
-    registrarDerrota() {
-        this._historico.jogos++;
-        this._historico.derrotas++;
-        this._historico.sequencia = 0;
-    }
     jogadorAcertou(palavra) {
         const jogadorAcertou = palavra == this.palavraSecreta;
         if (jogadorAcertou)
@@ -44,10 +35,21 @@ export class Termo {
         return jogadorAcertou;
     }
     jogadorPerdeu() {
-        return this.tentativas >= 5;
+        return this._tentativas >= 5;
     }
-    obterQuantidadeTentativas() {
-        return this.tentativas;
+    registrarTentativa() {
+        this._tentativas++;
+    }
+    registrarVitoria() {
+        this._historico.jogos++;
+        this._historico.vitorias++;
+        this._historico.sequencia++;
+        this._historico.tentativas[this._tentativas - 1]++;
+    }
+    registrarDerrota() {
+        this._historico.jogos++;
+        this._historico.derrotas++;
+        this._historico.sequencia = 0;
     }
     obterPalavraAleatoria() {
         const palavras = [
@@ -82,6 +84,4 @@ export class Termo {
         return palavras[indiceAletorio];
     }
 }
-// type AvaliacaoLetra = 'PosicaoCorreta' | 'PosicaoIncorreta' | 'NaoExistente';
-// const obj: AvaliacaoLetra = 'PosicaoIncorreta';
 //# sourceMappingURL=termo.js.map

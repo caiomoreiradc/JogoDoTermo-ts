@@ -1,7 +1,7 @@
 import { HistoricoUsuario } from "../dominio/historico-usuario.js";
 
 export class LocalStorageService {
-  private endereco = 'termo-ts:historico@1.0.0';
+  private endereco: string = 'termo-ts:historico@1.0.0';
 
   salvarDados(dados: HistoricoUsuario): void {
     const jsonString = JSON.stringify(dados);
