@@ -1,4 +1,4 @@
-import { AvaliacaoLetra } from "./avaliacao-letra.js";
+import { AvaliacaoLetra } from "./dominio/avaliacao-letra.js";
 import { LocalStorageService } from "./services/local-storage.service.js";
 import { Termo } from "./dominio/termo.js";
 class TelaTermo {
@@ -189,10 +189,12 @@ class TelaTermo {
             const qtdTentativas = tentativas[i];
             label.style.width = `${qtdTentativas * 10}%`;
             label.textContent = qtdTentativas.toString();
-            if (parseInt(label.style.width) < 5)
-                label.style.width = '5%';
-            if (parseInt(label.style.width) > 100)
-                label.style.width = '100%';
+            let tamanho = 0;
+            if (this.jogo.historico.vitorias > 0)
+                tamanho = qtdTentativas / this.jogo.historico.vitorias;
+            else
+                tamanho = 0.7;
+            label.style.width = (tamanho * parseInt(label.parentElement.style.width) * 100).toString();
         }
     }
 }

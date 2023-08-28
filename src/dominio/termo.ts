@@ -1,4 +1,4 @@
-import { AvaliacaoLetra } from "../avaliacao-letra.js";
+import { AvaliacaoLetra } from "./avaliacao-letra.js";
 import { HistoricoUsuario } from "./historico-usuario.js";
 
 export class Termo {

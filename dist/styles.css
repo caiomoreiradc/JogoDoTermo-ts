@@ -243,7 +243,7 @@ button:hover { cursor: pointer; }
 }
 
 .linha-tentativa > .valor-tentativa {
-  width: 5%;
+  width: 100%;
 
   font-size: 25px;
   font-weight: 700;

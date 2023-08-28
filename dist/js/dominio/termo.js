@@ -1,4 +1,4 @@
-import { AvaliacaoLetra } from "../avaliacao-letra.js";
+import { AvaliacaoLetra } from "./avaliacao-letra.js";
 export class Termo {
     get historico() {
         return this._historico;
