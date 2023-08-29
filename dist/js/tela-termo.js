@@ -157,19 +157,20 @@ class TelaTermo {
         for (let i = 0; i < tentativas.length; i++) {
             const label = elementos[i];
             const qtdTentativas = tentativas[i];
-            label.style.width = `${qtdTentativas * 10}%`;
             label.textContent = qtdTentativas.toString();
             let tamanho = 0;
-            if (this.jogo.historico.vitorias > 0)
+            if (qtdTentativas > 0 && this.jogo.historico.vitorias > 0)
                 tamanho = qtdTentativas / this.jogo.historico.vitorias;
             else
-                tamanho = 0.7;
-            label.style.width = (tamanho * parseInt(label.parentElement.style.width) * 100).toString();
+                tamanho = 0.05;
+            const novoTamanho = tamanho * 100;
+            label.style.width = `${(novoTamanho).toString()}%`;
         }
     }
     atualizarHistorico() {
         this.localStorageService.salvarDados(this.jogo.historico);
         this.popularEstatisticas();
+        this.desenharGridTentativas();
     }
     registrarElementos() {
         this.letrasClicadas = new Array();
