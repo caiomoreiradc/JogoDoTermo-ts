@@ -3,7 +3,8 @@ body, html { margin: 0; min-height: 100vh; }
 body { 
   font-family: 'Segoe UI', sans-serif;
 
-  background-color: #6E5C62;
+  background: rgb(251,63,199);
+  background: radial-gradient(circle, rgba(251,63,199,1) 0%, rgba(70,252,186,1) 100%);
   color: #ffffff;
 }
 
@@ -41,10 +42,10 @@ button:hover { cursor: pointer; }
   place-items: center;
   height: 100%;
 
-  background-color: #6E5C62;
+  background-color: #000000;
   color: #ffffff;
 
-  border: 7px solid #4C4347;
+  border: 7px solid #ffffff;
   border-radius: 10px;
 
   font-size: 22px;
@@ -62,7 +63,7 @@ button:hover { cursor: pointer; }
   /* height: 100%; */
 
   color: #ffffff;
-  background-color: #4C4347;
+  background-color: #000000;
   font-size: 22px;
   font-weight: 600;
 
@@ -77,7 +78,7 @@ button:hover { cursor: pointer; }
 }
 
 .grid-teclado > button:hover {
-  background-color: #a59da0;
+  background-color: #ffffff;
   color: #080404;
 
   font-weight: 800;
@@ -92,7 +93,7 @@ button:hover { cursor: pointer; }
 }
 
 .letra-nao-existente {
-  background-color: #2c2323 !important;
+  background-color: #ff0000 !important;
 }
 
 .container-notificacao {
@@ -110,7 +111,7 @@ button:hover { cursor: pointer; }
 
   font-size: 18px;
 
-  background-color: #6E5C62;
+  background-color: #ffffff;
 }
 
 .notificacao-acerto {
@@ -187,7 +188,7 @@ button:hover { cursor: pointer; }
 
   z-index: 1;
 
-  background-color: #312B2D;
+  background-color: #000000;
 
   border-radius: 10px;
 
