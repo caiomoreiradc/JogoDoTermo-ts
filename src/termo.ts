@@ -12,7 +12,7 @@ export class Termo{
   }
 
   avaliarPalavra(palavra: string): any {
-    return "abc"
+    return "abcde"
   }
 
   obterQuantidadeTentativas(): number {
